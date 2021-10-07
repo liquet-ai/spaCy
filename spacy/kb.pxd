@@ -47,6 +47,10 @@ cdef class KnowledgeBase:
     # to 64bit values (position of the _AliasC struct in the _aliases_table vector).
     cdef PreshMap _alias_index
 
+    # This maps 64bit keys (hash of unique alias string)
+    # to 64bit values (position of the _AliasC struct in the _aliases_table vector).
+    cdef PreshMap _entry_index_to_alias
+
     # This should map mention hashes to (entry_id, prob) tuples. The probability
     # should be P(entity | mention), which is pretty important to know.
     # We can pack both pieces of information into a 64-bit value, to keep things
