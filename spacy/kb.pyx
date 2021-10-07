@@ -90,6 +90,7 @@ cdef class KnowledgeBase:
         self.entity_vector_length = entity_vector_length
         self._entry_index = PreshMap()
         self._alias_index = PreshMap()
+        self._entry_index_to_alias = PreshMap()
         self.vocab = vocab
         self._create_empty_vectors(dummy_hash=self.vocab.strings[""])
 
@@ -100,12 +101,38 @@ cdef class KnowledgeBase:
 
     def initialize_aliases(self, int64_t nr_aliases):
         self._alias_index = PreshMap(nr_aliases + 1)
+        self._entry_index_to_alias = PreshMap(nr_aliases + 1)
         self._aliases_table = alias_vec(nr_aliases + 1)
 
     @property
     def entity_vector_length(self):
         """RETURNS (uint64): length of the entity vectors"""
         return self.entity_vector_length
+
+    @property
+    def entries(self):
+        """Expose the list of alias entries and their entity links"""
+        return self._entries
+
+    @property
+    def aliases_table(self):
+        """Expose the list of alias entries and their entity links"""
+        return self._aliases_table
+
+    @property
+    def entry_index_to_alias(self):
+        """Expose the list of alias entries and their entity links"""
+        return self._entry_index_to_alias
+
+    @property
+    def alias_index(self):
+        """Expose the list of alias entries and their entity links"""
+        return self._alias_index
+
+    @property
+    def entry_index(self):
+        """Expose the list of alias entries and their entity links"""
+        return self._entry_index
 
     def __len__(self):
         return self.get_size_entities()
@@ -282,6 +309,7 @@ cdef class KnowledgeBase:
             probs.push_back(float(prior_prob))
             alias_entry.probs = probs
             self._aliases_table[alias_index] = alias_entry
+            self._entry_index_to_alias[alias_entry] = alias_index
 
     def get_alias_candidates(self, unicode alias) -> Iterator[Candidate]:
         """
@@ -417,6 +445,7 @@ cdef class KnowledgeBase:
                 alias.entry_indices = indices
                 alias.probs = probs
                 self._aliases_table[i] = alias
+                self._entry_index_to_alias[alias] = i
                 self._alias_index[alias_hash] = i
                 i += 1
 
@@ -571,6 +600,7 @@ cdef class KnowledgeBase:
 
             self._aliases_table[i] = alias
             self._alias_index[alias_hash] = i
+            self._entry_index_to_alias[i] = alias_hash
 
             i += 1
 
